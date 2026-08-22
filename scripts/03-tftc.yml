@@ -12,28 +12,17 @@ script:
     # it may not be Alliance.exe. Adjust the prompt text/expectation below
     # if it differs.
     - tftc_exe: "N/A:Select the game executable (e.g. Alliance.exe) inside the TFTC folder you created with XwaInstallerManager"
+    - seed_prefix_marker: "N/A:Select the file named system.reg inside the Wine prefix used by your XWA Mod Installer Manager entry (Lutris: right-click that entry -> Configure -> Advanced -> Wine prefix, then browse to system.reg inside it)"
     - linux_patch_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XWAU2025_Linux.zip
 
   installer:
-    - task:
-        name: create_prefix
-        prefix: $GAMEDIR
-        arch: win64
-
-    - task:
-        name: winetricks
-        prefix: $GAMEDIR
-        app: corefonts consolas
-
-    # Optional: same DPI tweak as in 01-xwainstallermanager.yml, uncomment
-    # if the game's UI looks too small.
-    # - task:
-    #     name: set_regedit
-    #     prefix: $GAMEDIR
-    #     path: 'HKEY_CURRENT_USER\Control Panel\Desktop'
-    #     key: LogPixels
-    #     value: '112'
-    #     type: REG_DWORD
+    # Clones the prefix set up by 01-xwainstallermanager.yml (fonts, DPI,
+    # etc. already configured there) instead of reinstalling everything
+    # from scratch. $GAMEDIR is already a fresh empty directory at this
+    # point, so this is safe as the very first step.
+    - execute:
+        description: Cloning your XWA Mod Installer Manager prefix
+        command: 'cp -a "$(dirname "$seed_prefix_marker")/." "$GAMEDIR/"'
 
     - extract:
         file: linux_patch_zip

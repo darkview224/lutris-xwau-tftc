@@ -44,12 +44,13 @@ Three separate installer scripts, run in order:
    own GUI downloader.
 
 3. **`scripts/02-xwau2025.yml`** — depends on step 1's entry. Prompts you to
-   select `Alliance.exe` inside the XWAU2025 folder you just created,
-   builds its own dedicated prefix (fonts included again, since it's a
-   fresh prefix), downloads morallo's `XWAU2025_Linux.zip` compatibility
-   patch, and copies its contents into your XWAU2025 folder. Sets the
-   `ddraw.dll`/`dinput.dll` overrides to native-then-builtin (`n,b`), as the
-   wiki specifies. Produces a playable "X-Wing Alliance Upgrade 2025" entry.
+   select `Alliance.exe` inside the XWAU2025 folder you just created, and
+   to select `system.reg` inside the prefix from step 1 (so it can clone
+   that prefix into its own — see Design notes below). Downloads morallo's
+   `XWAU2025_Linux.zip` compatibility patch and copies its contents into
+   your XWAU2025 folder. Sets the `ddraw.dll`/`dinput.dll` overrides to
+   native-then-builtin (`n,b`), as the wiki specifies. Produces a playable
+   "X-Wing Alliance Upgrade 2025" entry.
 
 4. **`scripts/03-tftc.yml`** — identical to step 3, but for your TFTC
    folder. TFTC is confirmed to reuse the same `XWAU2025_Linux.zip` DLL
@@ -60,14 +61,23 @@ If you hit a blank screen on first launch of either game, use the game's
 
 ## Design notes
 
-- Each script builds its **own** Wine prefix rather than sharing one across
-  all three Lutris entries. Manually, the simplest path is duplicating one
-  Lutris entry and retargeting the copies (which does share one physical
-  prefix) — but Lutris's installer YAML format has no documented way to
-  point a new installer at an arbitrary existing prefix directory (file
-  pickers only select files, not folders, and `requires` doesn't expose a
-  path). Recreating the (trivial) prefix setup per script gets the same
-  result without depending on undocumented behavior.
+- Manually, the simplest path to a working setup is duplicating one Lutris
+  entry and retargeting the copies, which shares one physical prefix across
+  all of them (no need to reinstall fonts/DPI/etc. three times). Lutris's
+  installer YAML format has no "duplicate an entry" primitive, and file
+  pickers can only select a **file**, not a folder — so a script can't be
+  handed a prefix *directory* directly.
+- These scripts get the same practical outcome — a real duplicate, not just
+  three independently-built prefixes — using every Wine prefix's
+  `system.reg` marker file: `02-xwau2025.yml` and `03-tftc.yml` each prompt
+  you to select `system.reg` inside the prefix `01-xwainstallermanager.yml`
+  built, then run `cp -a "$(dirname <selected system.reg>)/." "$GAMEDIR/"`
+  as their first install step. That physically clones the whole prefix —
+  fonts, DPI, Gecko/Mono, everything — before the rest of the script runs,
+  so only `01-xwainstallermanager.yml` needs its own `create_prefix` +
+  `winetricks`. Scripts 2 and 3 inherit whatever prefix state actually
+  worked when you tested script 1, rather than re-running winetricks and
+  hoping it produces an equivalent result.
 - The XWAU2025/TFTC folders themselves live wherever XwaInstallerManager
   put them — they don't need to be inside the Wine prefix Lutris manages
   for that entry. Wine can run an executable from any path regardless of
@@ -81,7 +91,9 @@ without actually running the tools:
 - The exact executable name inside `XwaInstallerManager_WIP_*.zip`
   (assumed `XwaInstallerManager.exe`).
 - The exact winetricks verb set for the recommended fonts (currently
-  `corefonts consolas` — `corefonts` includes Arial and Verdana).
+  `corefonts consolas` — `corefonts` includes Arial and Verdana). This only
+  needs to be right in `01-xwainstallermanager.yml`; scripts 2 and 3 clone
+  its prefix rather than re-running winetricks.
 - Whether `XWAU2025_Linux.zip` extracts directly into a flat file set or
   behind a single wrapping folder (adjust the `cp` source path in
   `02-xwau2025.yml`/`03-tftc.yml` if the latter).
