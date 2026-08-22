@@ -1,0 +1,57 @@
+name: "X-Wing Alliance: Mod Installer Manager"
+game_slug: xwa-installer-manager
+version: "1.0"
+slug: xwa-installer-manager
+runner: wine
+
+# Adjust this to match the game_slug of your own installed vanilla X-Wing
+# Alliance (GOG) Lutris entry if it differs from the public lutris.net slug.
+script:
+  requires: star-wars-x-wing-alliance
+
+  files:
+    - manager_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XwaInstallerManager_WIP_2608091320.zip
+
+  installer:
+    - task:
+        name: create_prefix
+        prefix: $GAMEDIR
+        arch: win64
+
+    - task:
+        name: winetricks
+        prefix: $GAMEDIR
+        app: corefonts consolas
+
+    # Optional: the wiki recommends bumping prefix DPI to ~112 for a
+    # crisper UI. Uncomment and adjust if the interface looks too small.
+    # - task:
+    #     name: set_regedit
+    #     prefix: $GAMEDIR
+    #     path: 'HKEY_CURRENT_USER\Control Panel\Desktop'
+    #     key: LogPixels
+    #     value: '112'
+    #     type: REG_DWORD
+
+    - extract:
+        file: manager_zip
+        dst: $GAMEDIR/XwaInstallerManager
+
+    # NOTE: verify the exact executable name inside the WIP zip on first
+    # run and adjust this path if it differs from XwaInstallerManager.exe.
+    - task:
+        name: wineexec
+        prefix: $GAMEDIR
+        executable: $GAMEDIR/XwaInstallerManager/XwaInstallerManager.exe
+        description: >-
+          In the manager that just opened: point "Vanilla Location" at your
+          existing X-Wing Alliance install, pick/create a target directory,
+          and install "XWAU2025 1.0.0" plus the "1.1.0" update there. Close
+          the manager when done, then run 02-xwau2025.yml. You can reopen
+          this same manager entry later (pick a different target directory)
+          to install TFTC, then run 03-tftc.yml.
+
+  game:
+    exe: $GAMEDIR/XwaInstallerManager/XwaInstallerManager.exe
+    prefix: $GAMEDIR
+    arch: win64
