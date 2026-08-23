@@ -18,11 +18,14 @@ script:
   installer:
     # Clones the prefix set up by 01-xwainstallermanager.yml (fonts, DPI,
     # etc. already configured there) instead of reinstalling everything
-    # from scratch. $GAMEDIR is already a fresh empty directory at this
-    # point, so this is safe as the very first step.
+    # from scratch. Skipped if the selected system.reg already lives in
+    # $GAMEDIR (e.g. you pointed this install at the same folder as the
+    # manager entry) - cp refuses to copy a directory onto itself.
     - execute:
         description: Cloning your XWA Mod Installer Manager prefix
-        command: 'cp -a "$(dirname "$seed_prefix_marker")/." "$GAMEDIR/"'
+        command: >-
+          src="$(dirname "$seed_prefix_marker")";
+          if [ "$src" != "$GAMEDIR" ]; then cp -a "$src/." "$GAMEDIR/"; fi
 
     - extract:
         file: linux_patch_zip

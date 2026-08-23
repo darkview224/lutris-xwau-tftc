@@ -78,6 +78,12 @@ If you hit a blank screen on first launch of either game, use the game's
   `winetricks`. Scripts 2 and 3 inherit whatever prefix state actually
   worked when you tested script 1, rather than re-running winetricks and
   hoping it produces an equivalent result.
+- If you point a later script's install directory at the *same* folder you
+  used for `01-xwainstallermanager.yml` (i.e. you're deliberately sharing
+  one prefix across every entry, rather than giving each its own), the
+  clone step detects that the selected `system.reg` already lives in
+  `$GAMEDIR` and skips the copy instead of erroring — `cp` refuses to copy
+  a directory onto itself.
 - The XWAU2025/TFTC folders themselves live wherever XwaInstallerManager
   put them — they don't need to be inside the Wine prefix Lutris manages
   for that entry. Wine can run an executable from any path regardless of
