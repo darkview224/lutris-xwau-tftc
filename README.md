@@ -35,6 +35,15 @@ Three separate installer scripts, run in order:
    `xwa_ddraw_d3d11` project), and launches it. This becomes a permanent
    "reopen the mod manager" entry in your Lutris library.
 
+   **Only run this installer script once.** After it succeeds, reopen the
+   manager (e.g. to install TFTC into a second target directory) by
+   double-clicking/Play-ing the "X-Wing Alliance: Mod Installer Manager"
+   entry it created — do not re-run the installer script itself. Re-running
+   it re-applies `winetricks corefonts consolas` to a prefix that already
+   has them; on Proton/umu-based runners (e.g. GE-Proton, Proton-CachyOS)
+   this is a fatal error rather than a no-op, and aborts the whole install
+   with exit code 256 (`winetricks verb 'corefonts' is already installed`).
+
 2. **Manual step (outside any script):** in the running XwaInstallerManager,
    point "Vanilla Location" at your existing XWA install, pick a target
    directory, and install "XWAU2025 1.0.0" plus the "1.1.0 update". Later,

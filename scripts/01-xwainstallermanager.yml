@@ -47,9 +47,14 @@ script:
           In the manager that just opened: point "Vanilla Location" at your
           existing X-Wing Alliance install, pick/create a target directory,
           and install "XWAU2025 1.0.0" plus the "1.1.0" update there. Close
-          the manager when done, then run 02-xwau2025.yml. You can reopen
-          this same manager entry later (pick a different target directory)
-          to install TFTC, then run 03-tftc.yml.
+          the manager when done, then run 02-xwau2025.yml. To reopen this
+          same manager later (e.g. to install TFTC into a different target
+          directory), just double-click/Play the "X-Wing Alliance: Mod
+          Installer Manager" entry Lutris just created for you — do NOT
+          re-run this installer script again. Re-running it re-applies
+          winetricks to the same prefix, and Proton/umu-based runners treat
+          re-applying an already-installed verb as a fatal error, which
+          aborts the whole install (exit code 256).
 
   game:
     exe: $GAMEDIR/XwaInstallerManager/XwaInstallerManager.exe
