@@ -11,32 +11,9 @@ script:
 
   files:
     - manager_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XwaInstallerManager-linux_x86_20260824.zip
+    - xwa_exe: "N/A:Select Alliance.exe (or XWINGALLIANCE.EXE) inside your vanilla X-Wing Alliance install"
 
   installer:
-    # This prefix isn't used to run XwaInstallerManager itself (that's a
-    # native Linux binary, no Wine involved) - it exists purely as a
-    # font-seeded prefix for 02-xwau2025.yml and 03-tftc.yml to clone. See
-    # docs/DESIGN-NOTES.md.
-    - task:
-        name: create_prefix
-        prefix: $GAMEDIR
-        arch: win64
-
-    - task:
-        name: winetricks
-        prefix: $GAMEDIR
-        app: corefonts consolas
-
-    # Optional: the wiki recommends bumping prefix DPI to ~112 for a
-    # crisper UI. Uncomment and adjust if the interface looks too small.
-    # - task:
-    #     name: set_regedit
-    #     prefix: $GAMEDIR
-    #     path: 'HKEY_CURRENT_USER\Control Panel\Desktop'
-    #     key: LogPixels
-    #     value: '112'
-    #     type: REG_DWORD
-
     - extract:
         file: manager_zip
         dst: $GAMEDIR/XwaInstallerManager
@@ -44,6 +21,24 @@ script:
     - execute:
         description: Marking XwaInstallerManager as executable
         command: chmod +x "$GAMEDIR/XwaInstallerManager/XwaInstallerManager"
+
+    # Move the manager into the same Wine prefix as your vanilla XWA
+    # install (found by walking up from the picked exe to its enclosing
+    # drive_c), leaving a symlink at the Lutris-managed path so this entry
+    # still launches reliably either way. Purely for discoverability - see
+    # docs/DESIGN-NOTES.md - not because the (native, Wine-free) manager
+    # needs a prefix. If drive_c can't be found (an unusual prefix layout),
+    # this quietly does nothing and the manager just stays in $GAMEDIR.
+    - execute:
+        description: Placing XwaInstallerManager inside your vanilla XWA prefix
+        command: >-
+          prefix_dir="$(dirname "$xwa_exe")";
+          while [ "$prefix_dir" != "/" ] && [ "$(basename "$prefix_dir")" != "drive_c" ]; do prefix_dir="$(dirname "$prefix_dir")"; done;
+          if [ "$(basename "$prefix_dir")" = "drive_c" ]; then
+          prefix_root="$(dirname "$prefix_dir")";
+          target="$prefix_root/drive_c/XwaInstallerManager";
+          if [ ! -e "$target" ]; then mv "$GAMEDIR/XwaInstallerManager" "$target" && ln -s "$target" "$GAMEDIR/XwaInstallerManager"; fi;
+          fi
 
   game:
     exe: $GAMEDIR/XwaInstallerManager/XwaInstallerManager
@@ -53,10 +48,11 @@ script:
   # not under Wine. Click Play, then inside the manager: point "Vanilla
   # Location" at your existing X-Wing Alliance install, pick/create a
   # target directory, and install "XWAU2025 1.0.0" plus the "1.1.0" update
-  # there. Then run 02-xwau2025.yml. Reopen this same entry later (pick a
-  # different target directory) to install TFTC, then run 03-tftc.yml.
+  # there if you'd rather do it that way (see 02-xwau2025.yml for the
+  # alternative that doesn't need this entry at all). Reopen this same
+  # entry any time afterward to check for and apply updates.
   #
   # Lutris installer scripts can't set a library icon themselves (not a
   # thing the format supports) - the zip's own icon is left at
-  # $GAMEDIR/XwaInstallerManager/XwaInstallerManager.ico if you want to set
-  # it by hand afterward. See README.md.
+  # $GAMEDIR/XwaInstallerManager/XwaInstallerManager.ico (or its moved
+  # location, above) if you want to set it by hand afterward. See README.md.
