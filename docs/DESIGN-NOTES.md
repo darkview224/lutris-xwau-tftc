@@ -21,9 +21,15 @@ This also resolved one of the old script's "unverified" guesses: the
 Windows build's executable name was assumed to be
 `XwaInstallerManager.exe`; the Linux build's binary is confirmed to be
 named exactly `XwaInstallerManager` (no extension), alongside an
-`XwaInstallerManager.ico` icon file that isn't currently wired into
-anything — Lutris banner/icon art is normally set by hand after install,
-and scripting that wasn't worth the added complexity.
+`XwaInstallerManager.ico` icon file. We checked whether the installer
+script itself could wire that up as the entry's library icon: it can't —
+[Lutris's installer YAML
+spec](https://github.com/lutris/lutris/blob/master/docs/installers.rst)
+has no `icon:`/`banner:` directive or any other documented way for a
+script to set game art; that's strictly a per-user, Lutris-client-side
+thing. The extracted `.ico` is left in place at a predictable path and
+called out in the README so setting it by hand is a two-second job instead
+of a file hunt.
 
 `01-xwa-mod-manager.yml` still creates a Wine prefix and runs winetricks
 against it (`corefonts consolas`), even though the manager itself never

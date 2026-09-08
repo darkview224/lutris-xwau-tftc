@@ -55,3 +55,8 @@ script:
   # target directory, and install "XWAU2025 1.0.0" plus the "1.1.0" update
   # there. Then run 02-xwau2025.yml. Reopen this same entry later (pick a
   # different target directory) to install TFTC, then run 03-tftc.yml.
+  #
+  # Lutris installer scripts can't set a library icon themselves (not a
+  # thing the format supports) - the zip's own icon is left at
+  # $GAMEDIR/XwaInstallerManager/XwaInstallerManager.ico if you want to set
+  # it by hand afterward. See README.md.

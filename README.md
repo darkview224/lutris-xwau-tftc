@@ -56,6 +56,11 @@ of `XwaInstallerManager`. When it's done, you'll have a permanent
 this is how you reopen the tool later. Click **Play** to launch it; it
 runs directly, with no Wine translation layer involved.
 
+The download includes an icon
+(`XwaInstallerManager/XwaInstallerManager.ico` inside this entry's game
+folder) if you want to set it as the entry's icon by hand — Lutris install
+scripts can't do that part automatically.
+
 ### 2. Install the mods (manual step, no script)
 
 In the XwaInstallerManager window that just opened:
