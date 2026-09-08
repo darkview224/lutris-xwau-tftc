@@ -5,10 +5,10 @@ slug: tftc
 runner: wine
 
 script:
-  requires: xwa-installer-manager
+  requires: xwa-mod-manager
 
   files:
-    # NOTE: verify the actual executable name TFTC uses on first run —
+    # NOTE: verify the actual executable name TFTC uses on first run -
     # it may not be Alliance.exe. Adjust the prompt text/expectation below
     # if it differs.
     - tftc_exe: "N/A:Select the game executable (e.g. Alliance.exe) inside the TFTC folder you created with XwaInstallerManager"
@@ -16,7 +16,7 @@ script:
     - linux_patch_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XWAU2025_Linux.zip
 
   installer:
-    # Clones the prefix set up by 01-xwainstallermanager.yml (fonts, DPI,
+    # Clones the prefix set up by 01-xwa-mod-manager.yml (fonts, DPI,
     # etc. already configured there) instead of reinstalling everything
     # from scratch. Skipped if the selected system.reg already lives in
     # $GAMEDIR (e.g. you pointed this install at the same folder as the
@@ -31,10 +31,9 @@ script:
         file: linux_patch_zip
         dst: $GAMEDIR/tftc_linux_patch
 
-    # TFTC is confirmed to reuse the same Linux DLL wrapper as XWAU2025.
-    # If XWAU2025_Linux.zip contains a single wrapping top-level folder
-    # instead of the files directly, adjust the source path below to
-    # match (e.g. "$GAMEDIR/tftc_linux_patch/<folder-name>/.").
+    # TFTC is confirmed to reuse the same Linux DLL wrapper as XWAU2025,
+    # which extracts as a flat file set (plus one XwaInstallerRunner/
+    # subfolder, fine to copy alongside it).
     - execute:
         description: Copying the Linux DLL wrapper into your TFTC folder
         command: 'cp -rf "$GAMEDIR/tftc_linux_patch/." "$(dirname "$tftc_exe")/"'

@@ -1,19 +1,22 @@
-name: "X-Wing Alliance Upgrade 2025 (XWAU2025)"
-game_slug: xwau2025
+name: "TIE Fighter Total Conversion (TFTC)"
+game_slug: tftc
 version: "1.0"
-slug: xwau2025
+slug: tftc
 runner: wine
 
 script:
-  requires: xwa-mod-manager
+  requires: xwa-installer-manager
 
   files:
-    - xwau_exe: "N/A:Select Alliance.exe inside the XWAU2025 folder you created with XwaInstallerManager"
+    # NOTE: verify the actual executable name TFTC uses on first run —
+    # it may not be Alliance.exe. Adjust the prompt text/expectation below
+    # if it differs.
+    - tftc_exe: "N/A:Select the game executable (e.g. Alliance.exe) inside the TFTC folder you created with XwaInstallerManager"
     - seed_prefix_marker: "N/A:Select the file named system.reg inside the Wine prefix used by your XWA Mod Installer Manager entry (Lutris: right-click that entry -> Configure -> Advanced -> Wine prefix, then browse to system.reg inside it)"
     - linux_patch_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XWAU2025_Linux.zip
 
   installer:
-    # Clones the prefix set up by 01-xwa-mod-manager.yml (fonts, DPI,
+    # Clones the prefix set up by 01-xwainstallermanager.yml (fonts, DPI,
     # etc. already configured there) instead of reinstalling everything
     # from scratch. Skipped if the selected system.reg already lives in
     # $GAMEDIR (e.g. you pointed this install at the same folder as the
@@ -26,16 +29,18 @@ script:
 
     - extract:
         file: linux_patch_zip
-        dst: $GAMEDIR/xwau_linux_patch
+        dst: $GAMEDIR/tftc_linux_patch
 
-    # Confirmed: XWAU2025_Linux.zip extracts as a flat file set (plus one
-    # XwaInstallerRunner/ subfolder, which is fine to copy alongside it).
+    # TFTC is confirmed to reuse the same Linux DLL wrapper as XWAU2025.
+    # If XWAU2025_Linux.zip contains a single wrapping top-level folder
+    # instead of the files directly, adjust the source path below to
+    # match (e.g. "$GAMEDIR/tftc_linux_patch/<folder-name>/.").
     - execute:
-        description: Copying the Linux DLL wrapper into your XWAU2025 folder
-        command: 'cp -rf "$GAMEDIR/xwau_linux_patch/." "$(dirname "$xwau_exe")/"'
+        description: Copying the Linux DLL wrapper into your TFTC folder
+        command: 'cp -rf "$GAMEDIR/tftc_linux_patch/." "$(dirname "$tftc_exe")/"'
 
   game:
-    exe: $xwau_exe
+    exe: $tftc_exe
     prefix: $GAMEDIR
     arch: win64
 

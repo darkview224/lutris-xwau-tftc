@@ -5,7 +5,7 @@ slug: xwau2025
 runner: wine
 
 script:
-  requires: xwa-mod-manager
+  requires: xwa-installer-manager
 
   files:
     - xwau_exe: "N/A:Select Alliance.exe inside the XWAU2025 folder you created with XwaInstallerManager"
@@ -13,7 +13,7 @@ script:
     - linux_patch_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XWAU2025_Linux.zip
 
   installer:
-    # Clones the prefix set up by 01-xwa-mod-manager.yml (fonts, DPI,
+    # Clones the prefix set up by 01-xwainstallermanager.yml (fonts, DPI,
     # etc. already configured there) instead of reinstalling everything
     # from scratch. Skipped if the selected system.reg already lives in
     # $GAMEDIR (e.g. you pointed this install at the same folder as the
@@ -28,8 +28,9 @@ script:
         file: linux_patch_zip
         dst: $GAMEDIR/xwau_linux_patch
 
-    # Confirmed: XWAU2025_Linux.zip extracts as a flat file set (plus one
-    # XwaInstallerRunner/ subfolder, which is fine to copy alongside it).
+    # If XWAU2025_Linux.zip contains a single wrapping top-level folder
+    # instead of the files directly, adjust the source path below to
+    # match (e.g. "$GAMEDIR/xwau_linux_patch/<folder-name>/.").
     - execute:
         description: Copying the Linux DLL wrapper into your XWAU2025 folder
         command: 'cp -rf "$GAMEDIR/xwau_linux_patch/." "$(dirname "$xwau_exe")/"'

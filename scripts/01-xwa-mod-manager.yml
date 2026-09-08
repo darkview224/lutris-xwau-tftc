@@ -1,0 +1,57 @@
+name: "X-Wing Alliance: Mod Installer Manager"
+game_slug: xwa-mod-manager
+version: "1.0"
+slug: xwa-mod-manager
+runner: linux
+
+# Adjust this to match the game_slug of your own installed vanilla X-Wing
+# Alliance (GOG) Lutris entry if it differs from the public lutris.net slug.
+script:
+  requires: star-wars-x-wing-alliance
+
+  files:
+    - manager_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XwaInstallerManager-linux_x86_20260824.zip
+
+  installer:
+    # This prefix isn't used to run XwaInstallerManager itself (that's a
+    # native Linux binary, no Wine involved) - it exists purely as a
+    # font-seeded prefix for 02-xwau2025.yml and 03-tftc.yml to clone. See
+    # docs/DESIGN-NOTES.md.
+    - task:
+        name: create_prefix
+        prefix: $GAMEDIR
+        arch: win64
+
+    - task:
+        name: winetricks
+        prefix: $GAMEDIR
+        app: corefonts consolas
+
+    # Optional: the wiki recommends bumping prefix DPI to ~112 for a
+    # crisper UI. Uncomment and adjust if the interface looks too small.
+    # - task:
+    #     name: set_regedit
+    #     prefix: $GAMEDIR
+    #     path: 'HKEY_CURRENT_USER\Control Panel\Desktop'
+    #     key: LogPixels
+    #     value: '112'
+    #     type: REG_DWORD
+
+    - extract:
+        file: manager_zip
+        dst: $GAMEDIR/XwaInstallerManager
+
+    - execute:
+        description: Marking XwaInstallerManager as executable
+        command: chmod +x "$GAMEDIR/XwaInstallerManager/XwaInstallerManager"
+
+  game:
+    exe: $GAMEDIR/XwaInstallerManager/XwaInstallerManager
+    working_dir: $GAMEDIR/XwaInstallerManager
+
+  # No `wine:`/`prefix:` block here on purpose - this entry runs natively,
+  # not under Wine. Click Play, then inside the manager: point "Vanilla
+  # Location" at your existing X-Wing Alliance install, pick/create a
+  # target directory, and install "XWAU2025 1.0.0" plus the "1.1.0" update
+  # there. Then run 02-xwau2025.yml. Reopen this same entry later (pick a
+  # different target directory) to install TFTC, then run 03-tftc.yml.
