@@ -5,41 +5,65 @@ slug: tftc
 runner: wine
 
 script:
-  requires: xwa-mod-manager
+  requires: xwau2025
 
   files:
-    # NOTE: verify the actual executable name TFTC uses on first run -
-    # it may not be Alliance.exe. Adjust the prompt text/expectation below
-    # if it differs.
-    - tftc_exe: "N/A:Select the game executable (e.g. Alliance.exe) inside the TFTC folder you created with XwaInstallerManager"
-    - seed_prefix_marker: "N/A:Select the file named system.reg inside the Wine prefix used by your XWA Mod Installer Manager entry (Lutris: right-click that entry -> Configure -> Advanced -> Wine prefix, then browse to system.reg inside it)"
+    - xwau2025_exe: "N/A:Select Alliance.EXE inside your XWAU2025 install (built by 02-xwau2025.yml)"
+    # NOTE: unverified exact filename/count - TFTC's current distribution
+    # wasn't confirmed while building this script. Adjust the prompt text
+    # and the extraction step below if it turns out to ship as more than
+    # one archive.
+    - tftc_zip: "N/A:Select the TFTC installation zip you downloaded (from forums.xwaupgrade.com, or wherever TFTC is currently distributed)"
     - linux_patch_zip: https://github.com/morallo/xwa_ddraw_d3d11/releases/download/20260808_linux/XWAU2025_Linux.zip
 
   installer:
-    # Clones the prefix set up by 01-xwa-mod-manager.yml (fonts, DPI,
-    # etc. already configured there) instead of reinstalling everything
-    # from scratch. Skipped if the selected system.reg already lives in
-    # $GAMEDIR (e.g. you pointed this install at the same folder as the
-    # manager entry) - cp refuses to copy a directory onto itself.
+    # TFTC installs on top of an XWAU2025 install, not vanilla XWA - so
+    # this clones the prefix 02-xwau2025.yml built (same drive_c-walk
+    # trick as that script; see docs/DESIGN-NOTES.md). Fatal if not found,
+    # same reasoning as 02-xwau2025.yml.
     - execute:
-        description: Cloning your XWA Mod Installer Manager prefix
+        description: Cloning your XWAU2025 prefix
         command: >-
-          src="$(dirname "$seed_prefix_marker")";
-          if [ "$src" != "$GAMEDIR" ]; then cp -a "$src/." "$GAMEDIR/"; fi
+          prefix_dir="$(dirname "$xwau2025_exe")";
+          while [ "$prefix_dir" != "/" ] && [ "$(basename "$prefix_dir")" != "drive_c" ]; do prefix_dir="$(dirname "$prefix_dir")"; done;
+          if [ "$(basename "$prefix_dir")" != "drive_c" ]; then echo "Could not find a drive_c folder above the selected exe - is it really installed in a Wine prefix?" >&2; exit 1; fi;
+          prefix_root="$(dirname "$prefix_dir")";
+          if [ "$prefix_root" != "$GAMEDIR" ]; then cp -a "$prefix_root/." "$GAMEDIR/"; fi
+
+    # No winetricks step here - fonts/DPI were already applied when
+    # 02-xwau2025.yml built the prefix this one just cloned.
+
+    - execute:
+        description: Copying your XWAU2025 files into a new TFTC folder
+        command: >-
+          mkdir -p "$GAMEDIR/drive_c/TFTC";
+          cp -a "$(dirname "$xwau2025_exe")/." "$GAMEDIR/drive_c/TFTC/"
+
+    - extract:
+        file: tftc_zip
+        dst: $GAMEDIR/tftc_extracted
+
+    # Same flat-file-set assumption as 02-xwau2025.yml's zips - unverified
+    # for TFTC's own archive specifically.
+    - execute:
+        description: Installing TFTC into your new TFTC folder
+        command: 'cp -rf "$GAMEDIR/tftc_extracted/." "$GAMEDIR/drive_c/TFTC/"'
 
     - extract:
         file: linux_patch_zip
         dst: $GAMEDIR/tftc_linux_patch
 
-    # TFTC is confirmed to reuse the same Linux DLL wrapper as XWAU2025,
-    # which extracts as a flat file set (plus one XwaInstallerRunner/
-    # subfolder, fine to copy alongside it).
+    # TFTC is confirmed to reuse the same Linux DLL wrapper as XWAU2025.
+    # Reapplied here (already present via the XWAU2025 copy above) so it's
+    # guaranteed fresh and consistent regardless of what TFTC's own zip
+    # overwrote.
     - execute:
         description: Copying the Linux DLL wrapper into your TFTC folder
-        command: 'cp -rf "$GAMEDIR/tftc_linux_patch/." "$(dirname "$tftc_exe")/"'
+        command: 'cp -rf "$GAMEDIR/tftc_linux_patch/." "$GAMEDIR/drive_c/TFTC/"'
 
+  # Hardcoded, not picked - same reasoning as 02-xwau2025.yml.
   game:
-    exe: $tftc_exe
+    exe: $GAMEDIR/drive_c/TFTC/Alliance.EXE
     prefix: $GAMEDIR
     arch: win64
 
